@@ -1,15 +1,19 @@
+/* 1. Процедура, которая подсчитывает количество закрытых проектов за год и сравнивает их с планом */
 DELIMITER // 
-
-DROP PROCEDURE IF EXISTS `p1`//
-CREATE PROCEDURE `p1`() COMMENT 'Кол-во завершенных проектов за год'
+SET @z = 10// -- это план по закрытию проектов в год
+SET @a = '2019-01-01'// -- это начало года
+SET @b = '2019-12-31'// -- конец года
+DROP PROCEDURE IF EXISTS p5//
+CREATE PROCEDURE p5 (inout value INT) COMMENT ''
 	BEGIN 
-			(SELECT '2019' AS 'год', COUNT(*) AS 'закрытых проектов' FROM orders o 
-				WHERE o.o_status_id = (SELECT os.id FROM o_status os WHERE os.name = 'завершен')
-				AND o.created_at BETWEEN '2019-01-01' AND '2019-12-31')
-		UNION
-			(SELECT '2020', COUNT(*) FROM orders o 
-				WHERE o.o_status_id = (SELECT os.id FROM o_status os WHERE os.name = 'завершен')
-				AND o.created_at BETWEEN '2020-01-01' AND '2020-12-31');
+			SET @x = value;
+            SET value = @z - value;
 	END//
     
-CALL p1//
+SET @y = (SELECT COUNT(*) FROM orders o 
+				WHERE o.o_status_id = (SELECT os.id FROM o_status os WHERE os.name = 'завершен')
+				AND o.created_at BETWEEN @a AND @b);
+
+CALL p5(@y);
+
+SELECT @z as 'план', @x as 'факт', @y as 'до выполнения плана';
